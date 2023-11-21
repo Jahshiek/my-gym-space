@@ -21,13 +21,8 @@ fetch(apiUrl)
 
     // Need to check crowd status at times with peak in the variable name
 
-    // Check crowd status at 5 PM and proceed with the reminder system
-    // const laterTime = new Date(currentTime);
-    // laterTime.setHours(17, 0, 0); // Set time to 5 PM
-    // const crowdStatusLater = determineCrowdStatus(openingHours, laterTime);
-    // console.log('Crowd Status at 5 PM:', crowdStatusLater);
 
-    // gym reminder
+    // gym REMINDER goes here
   })
   .catch(error => console.error('Error fetching data from Google Places API:', error));
 
