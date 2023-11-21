@@ -37,7 +37,8 @@ function determineCrowdStatus(openingHours, currentTime) {
     const currentDay = currentTime.getDay();
     const currentHour = currentTime.getHours();
 
-    // Example: Check if it's a weekday and within a time range (adjust as needed)
+    // Example: Check if it's a weekday and within a time range (adjust as needed) this is just a place holder time as im still figuring out how to webscrape information from a graph
+    // and theres no way to get occupancy data currently from my own gym
     const isWeekday = currentDay >= 1 && currentDay <= 5; // Monday to Friday
 
     const isPeakHours = isWeekday && currentHour >= 17 && currentHour <= 19; // 5 PM to 7 PM
