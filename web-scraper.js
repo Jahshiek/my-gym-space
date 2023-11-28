@@ -1,102 +1,48 @@
 const puppeteer = require('puppeteer');
 
-const url = 'https://www.amazon.com/roborock-Auto-Drying-Self-Refilling-Self-Emptying-Avoidance/dp/B0BVVSTJWS?ref_=Oct_DLandingS_M_679161dd_0';
-
-async function scrapeInformation(url) {
-  const browser = await puppeteer.launch({
-    headless: 'new'
-  });
+async function scrapeGoogleSearch(query) {
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
 
-  await page.goto(url);
+  // Navigate to the Google search page
+  await page.goto(query);
 
-  // Use XPath to select the element
-  const [element] = await page.$x('//*[@id="main-image"]');
+  // Wait for the results to load (you might need to adjust the selector)
+  await page.waitForSelector('.tcuWYc');
 
-  // Check if the element is found
-  if (element) {
-    const src = await element.getProperty('src');
-    const srcStr = await src.jsonValue();
-    console.log({ srcStr });
-  } else {
-    console.log('Element not found.');
-  }
+  // Wait for the graph elements to be present
+  await page.waitForSelector('.xiXXie', { visible: true });
 
+  // Extract data from the search results, targeting the graph element
+  const results = await page.evaluate(() => {
+    const graphs = Array.from(document.querySelectorAll('.xiXXie'));
+    return graphs.map(graph => {
+      // Extract relevant information from the graph element
+      const dataHour = Number(graph.getAttribute('data-hour')); // Convert to an integer for comparison
+      const dayOfWeek = graph.getAttribute('aria-label'); // Extract the day of the week
+
+      // Determine if the gym is busy based on the value of data-hour, day of the week, and operating hours
+      const isOpenHours =
+        (dataHour >= 5 && dataHour <= 23) || (dataHour >= 7 && dataHour <= 19); // Adjust based on actual open hours
+      const isBusy =
+        isOpenHours &&
+        (dayOfWeek === 'Saturday' || dayOfWeek === 'Sunday' || (dayOfWeek !== 'Friday' && dataHour >= 16 && dataHour <= 20)); // Adjust based on actual busy criteria
+
+      return { dataHour, dayOfWeek, isBusy };
+    });
+  });
+
+  console.log(results);
+
+  // Close the browser
   browser.close();
 }
 
-scrapeInformation(url);
+// Invoke the function with the desired Google search URL
+const googleSearchUrl = 'https://www.google.com/search?q=blink+farmers&oq=blink+farmers&gs_lcrp=EgZjaHJvbWUqCggAEAAY4wIYgAQyCggAEAAY4wIYgAQyDQgBEC4YrwEYxwEYgAQyCAgCEAAYFhgeMggIAxAAGBYYHjINCAQQABiGAxiABBiKBTIGCAUQRRg8MgYIBhBFGD0yBggHEEUYPNIBCDcwMDdqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8#ip=1';
+
+// Call the function with the URL
+scrapeGoogleSearch(googleSearchUrl);
 
 
-// function scrapeMultiple() {
-//     // Example URLs and XPaths
-//     const locations = [
-//       {
-//         url: 'https://locations.blinkfitness.com/ny/queens/130-20-farmers-blvd',
-//         xpath: '//*[@id="main"]/div[5]/div[5]/div/div/div[4]/button/div/div[1]/div/img',
-//       },
-//       {
-//         url: 'https://locations.blinkfitness.com/ny/queens/130-20-farmers-blvd',
-//         xpath: '//*[@id="main"]/div[5]/div[5]/div/div/div[4]/button/div/div[1]/div/img',
-//       },
-//       //*[@id="main-image"]
-//     ];
-  
-//     // Scrape information for each location
-//     for (const location of locations) {
-//       console.log(`Scraping information for: ${location.url}`);
-//       scrapeInformation(location.url, location.xpath);
-//     }
-//   }
-  
-//   // Run the function
-//   scrapeMultiple();
-
-// const puppeteer = require('puppeteer');
-
-// async function scrapeInformation(url, xpath) {
-//   const browser = await puppeteer.launch({
-//     headless: 'new'
-//   });
-//   const page = await browser.newPage();
-
-//   await page.goto(url);
-
-//   // Use XPath to select the element
-//   const [element] = await page.$x(xpath);
-
-//   // Check if the element is found
-//   if (element) {
-//     const src = await element.getProperty('src');
-//     const srcStr = await src.jsonValue();
-//     console.log({ srcStr });
-//   } else {
-//     console.log('Element not found.');
-//   }
-
-//   browser.close();
-// }
-
-// function scrapeMultiple() {
-//   // Example URLs and XPaths
-//   const thingsToBeScraped = [
-//     {
-//       url: 'https://locations.blinkfitness.com/ny/queens/130-20-farmers-blvd',
-//       xpath: '//*[@id="main"]/div[5]/div[5]/div/div/div[4]/button/div/div[1]/div/img',
-//     },
-//     {
-//       url: 'https://www.amazon.com/roborock-Auto-Drying-Self-Refilling-Self-Emptying-Avoidance/dp/B0BVVSTJWS?ref_=Oct_DLandingS_M_679161dd_0',
-//       xpath: '//*[@id="main-image"]',
-//     }
-//   ];
-
-//   // Scrape information for each location
-//   for (const things of thingsToBeScraped) {
-//     console.log(`Scraping information for: ${thingsToBeScraped.url}`);
-//     scrapeInformation(thingsToBeScraped.url, thingsToBeScraped.xpath);
-//   }
-// }
-
-// // Run the function
-// scrapeMultiple();
-
+//as youre iterating put all days in an objectscrape all the info from the resultant array
